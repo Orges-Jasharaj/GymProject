@@ -97,10 +97,14 @@ namespace GymProject
                 };
             });
 
+            builder.Services.AddScoped<DapperContext>();
+
             builder.Services.AddScoped<IUser, UserService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<CurrentUserService>();
+            builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+            builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 
 
