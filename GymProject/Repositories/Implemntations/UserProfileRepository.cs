@@ -97,5 +97,13 @@ namespace GymProject.Repositories.Implemntations
                 throw;
             }
         }
+
+        public async Task<Guid?> GetUserProfileIdByUserId(string userId)
+        {
+            var query = "SELECT Id FROM UserProfiles WHERE UserId = @UserId";
+
+            using var connection = _context.CreateConnection();
+            return await connection.QueryFirstOrDefaultAsync<Guid?>(query, new { UserId = userId });
+        }
     }
 }

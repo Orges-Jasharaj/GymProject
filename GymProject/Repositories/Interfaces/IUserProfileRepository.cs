@@ -8,5 +8,6 @@ namespace GymProject.Repositories.Interfaces
         Task<int> CreateAsync(UserProfile userProfile);
         Task<int> UpdateAsync(UserProfile userProfile);
         Task<int> DeleteAsync(Guid id);
+        Task<Guid?> GetUserProfileIdByUserId(string userId);
     }
 }

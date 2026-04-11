@@ -17,25 +17,25 @@ namespace GymProject.Controllers
             _userProfileService = userProfileService;
         }
 
-        [HttpGet("me")]
+        [HttpGet("GetMyProfile")]
         public async Task<IActionResult> GetMyProfile()
         {
             return Ok(await _userProfileService.GetMyProfileAsync());
         }
 
-        [HttpPost]
+        [HttpPost("CreateUserProfile")]
         public async Task<IActionResult> Create(CreateUserProfileRequest request)
         {
             return Ok(await _userProfileService.CreateAsync(request));  
         }
 
-        [HttpPut]
+        [HttpPut("UpdateUserProfile")]
         public async Task<IActionResult> Update(UpdateUserProfileRequest request)
         {
             return Ok(await _userProfileService.UpdateAsync(request));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("DeleteUserProfile/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             return Ok(await _userProfileService.DeleteAsync(id));

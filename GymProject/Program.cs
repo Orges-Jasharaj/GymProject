@@ -1,6 +1,7 @@
 
 using GymProject.Data;
 using GymProject.Dtos.System;
+using GymProject.Middleware;
 using GymProject.Models;
 using GymProject.Repositories.Implemntations;
 using GymProject.Repositories.Interfaces;
@@ -105,7 +106,8 @@ namespace GymProject
             builder.Services.AddScoped<CurrentUserService>();
             builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
-
+            builder.Services.AddScoped<IFitnessPlansRepository, FitnessPlansRepository>();
+            builder.Services.AddScoped<IFitnessPlanService, FitnessPlanService>();
 
 
             builder.Services.AddControllers();
@@ -129,6 +131,7 @@ namespace GymProject
 
             app.UseHttpsRedirection();
 
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseAuthentication();
             app.UseAuthorization();
 
