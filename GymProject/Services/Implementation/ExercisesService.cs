@@ -1,4 +1,4 @@
-﻿using GymProject.Dtos.Requests;
+using GymProject.Dtos.Requests;
 using GymProject.Dtos.Responses;
 using GymProject.Models;
 using GymProject.Repositories.Interfaces;
@@ -11,12 +11,14 @@ namespace GymProject.Services.Implementation
         private readonly IExercisesRepository _exercisesRepository;
         private readonly ILogger<ExercisesService> _logger;
         private readonly CurrentUserService _currentUserService;
+        private readonly IAuditLogService _auditLogService;
 
-        public ExercisesService(IExercisesRepository exercisesRepository, ILogger<ExercisesService> logger, CurrentUserService currentUserService)
+        public ExercisesService(IExercisesRepository exercisesRepository, ILogger<ExercisesService> logger, CurrentUserService currentUserService, IAuditLogService auditLogService)
         {
             _exercisesRepository = exercisesRepository;
             _logger = logger;
             _currentUserService = currentUserService;
+            _auditLogService = auditLogService;
         }
 
         public async Task<ResponseDto<bool>> CreateExercise(CreateExercisesDto exercise)
@@ -37,6 +39,11 @@ namespace GymProject.Services.Implementation
                 };
 
                 var created = await _exercisesRepository.CreateExercise(newExercise);
+
+                if (created)
+                {
+                    await _auditLogService.LogActivityAsync<Exercises>(currentUserId, "Create", "Exercises", newExercise.Id.ToString(), null, newExercise);
+                }
 
                 if (!created)
                 {
@@ -71,6 +78,12 @@ namespace GymProject.Services.Implementation
                     return ResponseDto<bool>.Failure("You do not have permission to delete this exercise.");
                 }
                 var deleted = await _exercisesRepository.DeleteExercise(id);
+                
+                if (deleted)
+                {
+                    await _auditLogService.LogActivityAsync<Exercises>(currentUserId, "Delete", "Exercises", id.ToString(), existingExercise, null);
+                }
+
                 if (!deleted)
                 {
                     _logger.LogWarning("Failed to delete exercise with id {ExerciseId} for user {UserId}", id, currentUserId);
@@ -158,6 +171,19 @@ namespace GymProject.Services.Implementation
                     _logger.LogWarning("User {UserId} attempted to update exercise with id {ExerciseId} created by another user", currentUserId, id);
                     return ResponseDto<bool>.Failure("You do not have permission to update this exercise.");
                 }
+                var oldExercise = new Exercises
+                {
+                    Id = existingExercise.Id,
+                    Name = existingExercise.Name,
+                    Description = existingExercise.Description,
+                    MuscleGroup = existingExercise.MuscleGroup,
+                    Equipment = existingExercise.Equipment,
+                    CreatedBy = existingExercise.CreatedBy,
+                    CreatedAt = existingExercise.CreatedAt,
+                    UpdatedBy = existingExercise.UpdatedBy,
+                    UpdatedAt = existingExercise.UpdatedAt
+                };
+
                 existingExercise.Name = exercise.Name;
                 existingExercise.Description = exercise.Description;
                 existingExercise.MuscleGroup = exercise.MuscleGroup;
@@ -165,6 +191,12 @@ namespace GymProject.Services.Implementation
                 existingExercise.UpdatedBy = currentUserId;
                 existingExercise.UpdatedAt = DateTime.UtcNow;
                 var updated = await _exercisesRepository.UpdateExercise(id,existingExercise);
+                
+                if (updated)
+                {
+                    await _auditLogService.LogActivityAsync<Exercises>(currentUserId, "Update", "Exercises", id.ToString(), oldExercise, existingExercise);
+                }
+
                 if (!updated)
                 {
                     _logger.LogWarning("Failed to update exercise with id {ExerciseId} for user {UserId}", id, currentUserId);

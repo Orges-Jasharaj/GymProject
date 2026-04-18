@@ -1,4 +1,4 @@
-﻿using GymProject.Dtos.Requests;
+using GymProject.Dtos.Requests;
 using GymProject.Dtos.Responses;
 using GymProject.Models;
 using GymProject.Repositories.Interfaces;
@@ -12,17 +12,20 @@ namespace GymProject.Services.Implementation
         private readonly CurrentUserService _currentUserService;
         private readonly IFitnessPlansRepository _fitnessPlansRepository;
         private readonly IUserProfileRepository _userProfileRepository;
+        private readonly IAuditLogService _auditLogService;
 
         public FitnessPlanService(
             ILogger<FitnessPlanService> logger,
             CurrentUserService currentUserService,
             IFitnessPlansRepository fitnessPlansRepository,
-            IUserProfileRepository userProfileRepository)
+            IUserProfileRepository userProfileRepository,
+            IAuditLogService auditLogService)
         {
             _logger = logger;
             _currentUserService = currentUserService;
             _fitnessPlansRepository = fitnessPlansRepository;
             _userProfileRepository = userProfileRepository;
+            _auditLogService = auditLogService;
         }
 
         public async Task<ResponseDto<bool>> CreateFitnessPlanAsync(CreateFitnessPlansDto fitnessPlanDto)
@@ -47,6 +50,11 @@ namespace GymProject.Services.Implementation
                 };
 
                 var created = await _fitnessPlansRepository.CreateFitnessPlan(fitnessPlan);
+
+                if (created)
+                {
+                    await _auditLogService.LogActivityAsync<FitnessPlans>(currentUserId, "Create", "FitnessPlans", fitnessPlan.Id.ToString(), null, fitnessPlan);
+                }
 
                 if (!created)
                     return ResponseDto<bool>.Failure("Failed to create fitness plan");
@@ -104,6 +112,18 @@ namespace GymProject.Services.Implementation
 
                 if (fitnessPlan == null)
                     return ResponseDto<bool>.Failure("Fitness plan not found");
+                    
+                var oldFitnessPlan = new FitnessPlans
+                {
+                    Id = fitnessPlan.Id,
+                    UserId = fitnessPlan.UserId,
+                    Name = fitnessPlan.Name,
+                    Description = fitnessPlan.Description,
+                    CreatedBy = fitnessPlan.CreatedBy,
+                    CreatedAt = fitnessPlan.CreatedAt,
+                    UpdatedBy = fitnessPlan.UpdatedBy,
+                    UpdatedAt = fitnessPlan.UpdatedAt
+                };
 
                 fitnessPlan.Name = dto.Name;
                 fitnessPlan.Description = dto.Description;
@@ -111,6 +131,11 @@ namespace GymProject.Services.Implementation
                 fitnessPlan.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _fitnessPlansRepository.UpdateFitnessPlan(fitnessPlan);
+
+                if (updated)
+                {
+                    await _auditLogService.LogActivityAsync<FitnessPlans>(currentUserId, "Update", "FitnessPlans", id.ToString(), oldFitnessPlan, fitnessPlan);
+                }
 
                 if (!updated)
                     return ResponseDto<bool>.Failure("Failed to update fitness plan");
@@ -134,6 +159,12 @@ namespace GymProject.Services.Implementation
                     return ResponseDto<bool>.Failure("Fitness plan not found");
 
                 var deleted = await _fitnessPlansRepository.DeleteFitnessPlan(id);
+
+                if (deleted)
+                {
+                    var currentUserId = _currentUserService.GetCurrentUserId();
+                    await _auditLogService.LogActivityAsync<FitnessPlans>(currentUserId, "Delete", "FitnessPlans", id.ToString(), fitnessPlan, null);
+                }
 
                 if (!deleted)
                     return ResponseDto<bool>.Failure("Failed to delete fitness plan");

@@ -1,4 +1,4 @@
-﻿using GymProject.Dtos.Requests;
+using GymProject.Dtos.Requests;
 using GymProject.Dtos.Responses;
 using GymProject.Models;
 using GymProject.Repositories.Interfaces;
@@ -11,15 +11,18 @@ namespace GymProject.Services.Implementation
         private readonly IPlanExercisesRepository _planExercisesRepository;
         private readonly ILogger<PlanExercisesService> _logger;
         private readonly CurrentUserService _currentUserService;
+        private readonly IAuditLogService _auditLogService;
 
         public PlanExercisesService(
             IPlanExercisesRepository planExercisesRepository,
             ILogger<PlanExercisesService> logger,
-            CurrentUserService currentUserService)
+            CurrentUserService currentUserService,
+            IAuditLogService auditLogService)
         {
             _planExercisesRepository = planExercisesRepository;
             _logger = logger;
             _currentUserService = currentUserService;
+            _auditLogService = auditLogService;
         }
 
         public async Task<ResponseDto<bool>> AddPlanExerciseAsync(CreatePlanExercisesDto planExercise)
@@ -41,6 +44,11 @@ namespace GymProject.Services.Implementation
                 };
 
                 var created = await _planExercisesRepository.AddPlanExerciseAsync(newPlanExercise);
+
+                if (created)
+                {
+                    await _auditLogService.LogActivityAsync<PlanExercises>(currentUserId, "Create", "PlanExercises", newPlanExercise.Id.ToString(), null, newPlanExercise);
+                }
 
                 if (!created)
                 {
@@ -77,6 +85,11 @@ namespace GymProject.Services.Implementation
                 }
 
                 var deleted = await _planExercisesRepository.DeletePlanExerciseAsync(id);
+
+                if (deleted)
+                {
+                    await _auditLogService.LogActivityAsync<PlanExercises>(currentUserId, "Delete", "PlanExercises", id.ToString(), existing, null);
+                }
 
                 if (!deleted)
                 {
@@ -175,6 +188,20 @@ namespace GymProject.Services.Implementation
                     return ResponseDto<bool>.Failure("You do not have permission to update this item.");
                 }
 
+                var oldPlanExercise = new PlanExercises
+                {
+                    Id = existing.Id,
+                    FitnessPlanId = existing.FitnessPlanId,
+                    ExerciseId = existing.ExerciseId,
+                    Sets = existing.Sets,
+                    Reps = existing.Reps,
+                    ExerciseOrder = existing.ExerciseOrder,
+                    CreatedAt = existing.CreatedAt,
+                    CreatedBy = existing.CreatedBy,
+                    UpdatedAt = existing.UpdatedAt,
+                    UpdatedBy = existing.UpdatedBy
+                };
+
                 existing.FitnessPlanId = planExercise.FitnessPlanId;
                 existing.ExerciseId = planExercise.ExerciseId;
                 existing.Sets = planExercise.Sets;
@@ -184,6 +211,11 @@ namespace GymProject.Services.Implementation
                 existing.UpdatedBy = currentUserId;
 
                 var updated = await _planExercisesRepository.UpdatePlanExerciseAsync(id, existing);
+
+                if (updated)
+                {
+                    await _auditLogService.LogActivityAsync<PlanExercises>(currentUserId, "Update", "PlanExercises", id.ToString(), oldPlanExercise, existing);
+                }
 
                 if (!updated)
                 {

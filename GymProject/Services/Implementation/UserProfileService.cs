@@ -1,4 +1,4 @@
-﻿using GymProject.Dtos.Requests;
+using GymProject.Dtos.Requests;
 using GymProject.Dtos.Responses;
 using GymProject.Models;
 using GymProject.Repositories.Interfaces;
@@ -11,15 +11,18 @@ namespace GymProject.Services.Implementation
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly CurrentUserService _currentUserService;
         private readonly ILogger<UserProfileService> _logger;
+        private readonly IAuditLogService _auditLogService;
 
         public UserProfileService(
             IUserProfileRepository userProfileRepository,
             CurrentUserService currentUserService,
-            ILogger<UserProfileService> logger)
+            ILogger<UserProfileService> logger,
+            IAuditLogService auditLogService)
         {
             _userProfileRepository = userProfileRepository;
             _currentUserService = currentUserService;
             _logger = logger;
+            _auditLogService = auditLogService;
         }
 
         public async Task<ResponseDto<UserProfileDto>> GetMyProfileAsync()
@@ -104,6 +107,11 @@ namespace GymProject.Services.Implementation
 
                 var result = await _userProfileRepository.CreateAsync(profile);
 
+                if (result > 0)
+                {
+                    await _auditLogService.LogActivityAsync<UserProfile>(currentUserId, "Create", "UserProfiles", profile.Id.ToString(), null, profile);
+                }
+
                 if (result <= 0)
                 {
                     _logger.LogWarning("Failed to create user profile for UserId: {UserId}", currentUserId);
@@ -141,6 +149,21 @@ namespace GymProject.Services.Implementation
                     return ResponseDto<bool>.Failure("Profile not found.");
                 }
 
+                var oldProfile = new UserProfile
+                {
+                    Id = existingProfile.Id,
+                    UserId = existingProfile.UserId,
+                    Gender = existingProfile.Gender,
+                    HeightCm = existingProfile.HeightCm,
+                    CurrentWeightKg = existingProfile.CurrentWeightKg,
+                    GoalWeightKg = existingProfile.GoalWeightKg,
+                    ActivityLevel = existingProfile.ActivityLevel,
+                    FitnessGoal = existingProfile.FitnessGoal,
+                    DateOfBirth = existingProfile.DateOfBirth,
+                    CreatedAt = existingProfile.CreatedAt,
+                    UpdatedAt = existingProfile.UpdatedAt
+                };
+
                 existingProfile.Gender = request.Gender;
                 existingProfile.HeightCm = request.HeightCm;
                 existingProfile.CurrentWeightKg = request.CurrentWeightKg;
@@ -151,6 +174,11 @@ namespace GymProject.Services.Implementation
                 existingProfile.UpdatedAt = DateTime.UtcNow;
 
                 var result = await _userProfileRepository.UpdateAsync(existingProfile);
+
+                if (result > 0)
+                {
+                    await _auditLogService.LogActivityAsync<UserProfile>(currentUserId, "Update", "UserProfiles", existingProfile.Id.ToString(), oldProfile, existingProfile);
+                }
 
                 if (result <= 0)
                 {
@@ -181,7 +209,14 @@ namespace GymProject.Services.Implementation
                     return ResponseDto<bool>.Failure("User not authenticated.");
                 }
 
+                var existingProfile = await _userProfileRepository.GetByUserIdAsync(currentUserId);
+
                 var result = await _userProfileRepository.DeleteAsync(id);
+
+                if (result > 0)
+                {
+                    await _auditLogService.LogActivityAsync<UserProfile>(currentUserId, "Delete", "UserProfiles", id.ToString(), existingProfile, null);
+                }
 
                 if (result <= 0)
                 {

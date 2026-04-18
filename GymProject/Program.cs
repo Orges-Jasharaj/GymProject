@@ -112,6 +112,8 @@ namespace GymProject
             builder.Services.AddScoped<IExercisesService, ExercisesService>();
             builder.Services.AddScoped<IPlanExercisesRepository, PlanExercisesRepository>();
             builder.Services.AddScoped<IPlanExercisesService, PlanExercisesService>();
+            builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+            builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 
 
             builder.Services.AddControllers();
