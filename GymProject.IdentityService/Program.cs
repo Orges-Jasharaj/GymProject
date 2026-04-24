@@ -116,7 +116,13 @@ namespace GymProject
 
             var app = builder.Build();
 
-            SeedData.InitializeAsync(app.Services).GetAwaiter().GetResult();
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                dbContext.Database.Migrate();
+                
+                SeedData.InitializeAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

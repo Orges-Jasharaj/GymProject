@@ -1,4 +1,4 @@
-﻿using GymProject.Dtos.Requests;
+using GymProject.Dtos.Requests;
 using GymProject.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +21,12 @@ namespace GymProject.Controllers
         public async Task<IActionResult> GetMyProfile()
         {
             return Ok(await _userProfileService.GetMyProfileAsync());
+        }
+
+        [HttpGet("GetProfileIdByUserId/{userId}")]
+        public async Task<IActionResult> GetProfileIdByUserId(string userId)
+        {
+            return Ok(await _userProfileService.GetProfileIdByUserIdAsync(userId));
         }
 
         [HttpPost("CreateUserProfile")]

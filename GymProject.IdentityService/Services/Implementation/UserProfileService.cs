@@ -71,6 +71,24 @@ namespace GymProject.Services.Implementation
             }
         }
 
+        public async Task<ResponseDto<Guid?>> GetProfileIdByUserIdAsync(string userId)
+        {
+            try
+            {
+                var profileId = await _userProfileRepository.GetUserProfileIdByUserId(userId);
+                if (profileId == null)
+                {
+                    return ResponseDto<Guid?>.Failure("Profile not found for the given user ID.");
+                }
+                return ResponseDto<Guid?>.SuccessResponse(profileId, "Profile ID retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving profile ID for User ID: {UserId}", userId);
+                return ResponseDto<Guid?>.Failure("Error retrieving profile ID.");
+            }
+        }
+
         public async Task<ResponseDto<bool>> CreateAsync(CreateUserProfileRequest request)
         {
             try

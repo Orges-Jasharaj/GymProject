@@ -94,7 +94,11 @@ namespace GymProject
             builder.Services.AddScoped<DapperContext>();
 
             builder.Services.AddScoped<CurrentUserService>();
-            builder.Services.AddHttpClient<IUserProfileClient, UserProfileClient>();
+            builder.Services.AddHttpClient<IUserProfileClient, UserProfileClient>(client =>
+            {
+                var identityUrl = builder.Configuration["IdentityServiceUrl"] ?? "https://localhost:7092/";
+                client.BaseAddress = new Uri(identityUrl);
+            });
             builder.Services.AddScoped<IFitnessPlansRepository, FitnessPlansRepository>();
             builder.Services.AddScoped<IFitnessPlanService, FitnessPlanService>();
             builder.Services.AddScoped<IExercisesRepository, ExercisesRepository>();

@@ -17,19 +17,22 @@ namespace GymProject.Services.Implementation
         {
             try
             {
-                // In a real microservice, this would call the IdentityService API.
-                // For now, we will assume the UserId string is actually a Guid, or we just return a dummy Guid if it's not.
-                if (Guid.TryParse(userId, out var guid))
+                var response = await _httpClient.GetAsync($"/api/UserProfiles/GetProfileIdByUserId/{userId}");
+                if (response.IsSuccessStatusCode)
                 {
-                    return guid;
+                    var result = await response.Content.ReadFromJsonAsync<GymProject.Dtos.Responses.ResponseDto<Guid?>>();
+                    if (result != null && result.Success)
+                    {
+                        return result.Data;
+                    }
                 }
                 
-                // Return a dummy value to allow testing until the API integration is built
-                return Guid.Empty;
+                _logger.LogWarning("Failed to retrieve UserProfileId for UserId: {UserId} from IdentityService. Status: {StatusCode}", userId, response.StatusCode);
+                return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get UserProfileId for UserId: {UserId}", userId);
+                _logger.LogError(ex, "Failed to call IdentityService to get UserProfileId for UserId: {UserId}", userId);
                 return null;
             }
         }

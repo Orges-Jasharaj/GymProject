@@ -1,0 +1,58 @@
+
+services:
+  identity-service:
+    image: gymproject-identity-service
+    build:
+      context: .
+      dockerfile: GymProject.IdentityService/Dockerfile
+    ports:
+      - "5263:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=GymProject_IdentityDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+    depends_on:
+      - sql-server
+
+  fitness-service:
+    image: gymproject-fitness-service
+    build:
+      context: .
+      dockerfile: GymProject.FitnessService/Dockerfile
+    ports:
+      - "5020:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=GymProject_FitnessDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      # Base address for calling identity
+      - IdentityServiceUrl=http://identity-service:8080
+    depends_on:
+      - sql-server
+      - identity-service
+
+  api-gateway:
+    image: gymproject-api-gateway
+    build:
+      context: .
+      dockerfile: GymProject.Gateway/Dockerfile
+    ports:
+      - "5134:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address=http://identity-service:8080
+      - ReverseProxy__Clusters__fitness-cluster__Destinations__destination1__Address=http://fitness-service:8080
+    depends_on:
+      - identity-service
+      - fitness-service
+
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Password123
+    ports:
+      - "1433:1433"
+    volumes:
+      - gymproject-sql-data:/var/opt/mssql
+
+volumes:
+  gymproject-sql-data:
