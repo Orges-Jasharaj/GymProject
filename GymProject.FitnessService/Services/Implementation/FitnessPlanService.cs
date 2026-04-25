@@ -3,6 +3,7 @@ using GymProject.Dtos.Responses;
 using GymProject.Models;
 using GymProject.Repositories.Interfaces;
 using GymProject.Services.Interface;
+using GymProject.Shared.Dtos.Responses;
 
 namespace GymProject.Services.Implementation
 {
@@ -205,6 +206,24 @@ namespace GymProject.Services.Implementation
             {
                 _logger.LogError(ex, "Error retrieving fitness plan");
                 return ResponseDto<FitnessPlansDto>.Failure("Error retrieving fitness plan");
+            }
+        }
+
+        public async Task<ResponseDto<FitnessPlanDetailsDto>> GetFitnessPlanDetailsAsync(Guid id)
+        {
+            try
+            {
+                var result = await _fitnessPlansRepository.GetFitnessPlanDetails(id);
+
+                if (result == null)
+                    return ResponseDto<FitnessPlanDetailsDto>.Failure("Not found");
+
+                return ResponseDto<FitnessPlanDetailsDto>.SuccessResponse(result, "Success");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting fitness plan details");
+                return ResponseDto<FitnessPlanDetailsDto>.Failure("Error");
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using GymProject.Models;
+using GymProject.Shared.Dtos.Responses;
 
 namespace GymProject.Repositories.Interfaces
 {
@@ -9,5 +10,6 @@ namespace GymProject.Repositories.Interfaces
         Task<List<FitnessPlans>> GetAllFitnessPlans(Guid userId);
         Task<bool> UpdateFitnessPlan(FitnessPlans fitnessPlan);
         Task<bool> DeleteFitnessPlan(Guid id);
+        Task<FitnessPlanDetailsDto?> GetFitnessPlanDetails(Guid id);
     }
 }

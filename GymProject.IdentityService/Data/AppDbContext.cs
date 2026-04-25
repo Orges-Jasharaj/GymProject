@@ -15,6 +15,7 @@ namespace GymProject.Data
         }
 
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
 
         public override int SaveChanges()
         {

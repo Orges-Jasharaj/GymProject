@@ -50,5 +50,12 @@ namespace GymProject.Controllers
             var result = await _fitnessPlanService.GetAllFitnessPlansAsync();
             return Ok(result);
         }
+
+        [HttpGet("{id}/details")]
+        public async Task<IActionResult> GetDetails(Guid id)
+        {
+            var result = await _fitnessPlanService.GetFitnessPlanDetailsAsync(id);
+            return Ok(result);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using GymProject.Dtos.Requests;
 using GymProject.Dtos.Responses;
+using GymProject.Shared.Dtos.Responses;
 
 namespace GymProject.Services.Interface
 {
@@ -10,5 +11,6 @@ namespace GymProject.Services.Interface
         Task<ResponseDto<List<FitnessPlansDto>>> GetAllFitnessPlansAsync();
         Task<ResponseDto<bool>> UpdateFitnessPlanAsync(Guid id, CreateFitnessPlansDto fitnessPlanDto);
         Task<ResponseDto<bool>> DeleteFitnessPlanAsync(Guid id);
+        Task<ResponseDto<FitnessPlanDetailsDto>> GetFitnessPlanDetailsAsync(Guid id);
     }
 }

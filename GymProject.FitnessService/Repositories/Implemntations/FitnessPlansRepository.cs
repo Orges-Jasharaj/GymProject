@@ -2,6 +2,7 @@
 using GymProject.Data;
 using GymProject.Models;
 using GymProject.Repositories.Interfaces;
+using GymProject.Shared.Dtos.Responses;
 
 namespace GymProject.Repositories.Implemntations
 {
@@ -104,6 +105,43 @@ namespace GymProject.Repositories.Implemntations
                 _logger.LogError(ex, "Error updating fitness plan with Id: {Id}", fitnessPlan.Id);
                 return false;
             }
+        }
+
+        public async Task<FitnessPlanDetailsDto?> GetFitnessPlanDetails(Guid id)
+        {
+            var query = @"
+        SELECT 
+            fp.Id, fp.Name,
+            pe.ExerciseId, pe.Sets, pe.Reps, pe.ExerciseOrder,
+            e.Name
+        FROM FitnessPlans fp
+        JOIN PlanExercises pe ON fp.Id = pe.FitnessPlanId
+        JOIN Exercises e ON pe.ExerciseId = e.Id
+        WHERE fp.Id = @Id";
+
+            using var connection = _context.CreateConnection();
+
+            var planDictionary = new Dictionary<Guid, FitnessPlanDetailsDto>();
+
+            var result = await connection.QueryAsync<FitnessPlanDetailsDto, ExerciseInPlanDto, FitnessPlanDetailsDto>(
+                query,
+                (plan, exercise) =>
+                {
+                    if (!planDictionary.TryGetValue(plan.Id, out var currentPlan))
+                    {
+                        currentPlan = plan;
+                        currentPlan.Exercises = new List<ExerciseInPlanDto>();
+                        planDictionary.Add(plan.Id, currentPlan);
+                    }
+
+                    currentPlan.Exercises.Add(exercise);
+                    return currentPlan;
+                },
+                new { Id = id },
+                splitOn: "ExerciseId"
+            );
+
+            return planDictionary.Values.FirstOrDefault();
         }
     }
 }

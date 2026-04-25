@@ -1,22 +1,34 @@
 using GymProject.Services.Interface;
 
+using Microsoft.AspNetCore.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+
 namespace GymProject.Services.Implementation
 {
     public class UserProfileClient : IUserProfileClient
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<UserProfileClient> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserProfileClient(HttpClient httpClient, ILogger<UserProfileClient> logger)
+        public UserProfileClient(HttpClient httpClient, ILogger<UserProfileClient> logger, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Guid?> GetUserProfileIdByUserId(string userId)
         {
             try
             {
+                var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+
                 var response = await _httpClient.GetAsync($"/api/UserProfiles/GetProfileIdByUserId/{userId}");
                 if (response.IsSuccessStatusCode)
                 {
