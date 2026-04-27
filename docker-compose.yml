@@ -29,6 +29,21 @@ services:
       - sql-server
       - identity-service
 
+  nutrition-service:
+    image: gymproject-nutrition-service
+    build:
+      context: .
+      dockerfile: NutritionService/Dockerfile
+    ports:
+      - "5030:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=GymProject_NutritionDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      - IdentityServiceUrl=http://identity-service:8080/
+    depends_on:
+      - sql-server
+      - identity-service
+
   api-gateway:
     image: gymproject-api-gateway
     build:
@@ -40,9 +55,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address=http://identity-service:8080
       - ReverseProxy__Clusters__fitness-cluster__Destinations__destination1__Address=http://fitness-service:8080
+      - ReverseProxy__Clusters__nutrition-cluster__Destinations__destination1__Address=http://nutrition-service:8080
     depends_on:
       - identity-service
       - fitness-service
+      - nutrition-service
 
   sql-server:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -51,6 +68,11 @@ services:
       - MSSQL_SA_PASSWORD=YourStrong@Password123
     ports:
       - "1433:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"YourStrong@Password123\" -Q \"SELECT 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     volumes:
       - gymproject-sql-data:/var/opt/mssql
 
