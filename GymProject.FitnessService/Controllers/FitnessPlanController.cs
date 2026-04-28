@@ -1,5 +1,7 @@
 ﻿using GymProject.Dtos.Requests;
+using GymProject.Models;
 using GymProject.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,28 +18,32 @@ namespace GymProject.Controllers
             _fitnessPlanService = fitnessPlanService;
         }
 
-        [HttpGet("GetFitnessPlanByUserId")]
-        public async Task<IActionResult> GetFitnessPlanByUserId(Guid userId)
+        [HttpGet("GetFitnessPlanById/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetFitnessPlanById(Guid id)
         {
-            var result = await _fitnessPlanService.GetFitnessPlanByIdAsync(userId);
+            var result = await _fitnessPlanService.GetFitnessPlanByIdAsync(id);
             return Ok(result);
         }
 
         [HttpPost("CreateFitnessPlan")]
-        public async Task<IActionResult> CreateFitnessPlan(CreateFitnessPlansDto createFitnessPlansDto)
+        [Authorize]
+        public async Task<IActionResult> CreateFitnessPlan([FromBody] CreateFitnessPlansDto createFitnessPlansDto)
         {
             var result = await _fitnessPlanService.CreateFitnessPlanAsync(createFitnessPlansDto);
             return Ok(result);
         }
 
-        [HttpPut("UpdateFitnessPlan")]
-        public async Task<IActionResult> UpdateFitnessPlan(Guid id,CreateFitnessPlansDto updateFitnessPlansDto)
+        [HttpPut("UpdateFitnessPlan/{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFitnessPlan(Guid id, [FromBody] CreateFitnessPlansDto updateFitnessPlansDto)
         {
-            var result = await _fitnessPlanService.UpdateFitnessPlanAsync(id,updateFitnessPlansDto);
+            var result = await _fitnessPlanService.UpdateFitnessPlanAsync(id, updateFitnessPlansDto);
             return Ok(result);
         }
 
-        [HttpDelete("DeleteFitnessPlan")]
+        [HttpDelete("DeleteFitnessPlan/{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteFitnessPlan(Guid id)
         {
             var result = await _fitnessPlanService.DeleteFitnessPlanAsync(id);
@@ -45,6 +51,7 @@ namespace GymProject.Controllers
         }
 
         [HttpGet("GetAllFitnessPlans")]
+        [Authorize]
         public async Task<IActionResult> GetAllFitnessPlans()
         {
             var result = await _fitnessPlanService.GetAllFitnessPlansAsync();
@@ -52,6 +59,7 @@ namespace GymProject.Controllers
         }
 
         [HttpGet("{id}/details")]
+        [Authorize]
         public async Task<IActionResult> GetDetails(Guid id)
         {
             var result = await _fitnessPlanService.GetFitnessPlanDetailsAsync(id);

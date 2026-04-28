@@ -9,6 +9,7 @@ using GymProject.Repositories.Interfaces;
 using GymProject.Services.Implementation;
 using GymProject.Services.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Data.SqlClient;
 
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -19,7 +20,7 @@ namespace GymProject
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -138,7 +139,101 @@ namespace GymProject
 
             app.MapControllers();
 
+            // Initialize database and tables (Dapper has no auto-migration)
+            await InitializeDatabaseAsync(app.Configuration);
+
             app.Run();
+        }
+
+        private static async Task InitializeDatabaseAsync(IConfiguration configuration)
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection")!;
+            var builder = new SqlConnectionStringBuilder(connectionString);
+            var databaseName = builder.InitialCatalog;
+
+            builder.InitialCatalog = "master";
+            using (var masterConnection = new SqlConnection(builder.ConnectionString))
+            {
+                await masterConnection.OpenAsync();
+                using var checkCmd = masterConnection.CreateCommand();
+                checkCmd.CommandText = $@"
+                    IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '{databaseName}')
+                    BEGIN
+                        CREATE DATABASE [{databaseName}];
+                    END";
+                await checkCmd.ExecuteNonQueryAsync();
+            }
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.OpenAsync();
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Exercises')
+                    BEGIN
+                        CREATE TABLE Exercises (
+                            Id UNIQUEIDENTIFIER PRIMARY KEY,
+                            Name NVARCHAR(200) NOT NULL,
+                            Description NVARCHAR(MAX) NULL,
+                            MuscleGroup NVARCHAR(100) NULL,
+                            Equipment NVARCHAR(100) NULL,
+                            CreatedBy NVARCHAR(200) NOT NULL,
+                            CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                            UpdatedBy NVARCHAR(200) NULL,
+                            UpdatedAt DATETIME2 NULL
+                        );
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'FitnessPlans')
+                    BEGIN
+                        CREATE TABLE FitnessPlans (
+                            Id UNIQUEIDENTIFIER PRIMARY KEY,
+                            UserId UNIQUEIDENTIFIER NOT NULL,
+                            Name NVARCHAR(200) NOT NULL,
+                            Description NVARCHAR(MAX) NULL,
+                            CreatedBy NVARCHAR(200) NOT NULL,
+                            CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                            UpdatedBy NVARCHAR(200) NULL,
+                            UpdatedAt DATETIME2 NULL
+                        );
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PlanExercises')
+                    BEGIN
+                        CREATE TABLE PlanExercises (
+                            Id UNIQUEIDENTIFIER PRIMARY KEY,
+                            FitnessPlanId UNIQUEIDENTIFIER NOT NULL,
+                            ExerciseId UNIQUEIDENTIFIER NOT NULL,
+                            Sets INT NOT NULL,
+                            Reps INT NOT NULL,
+                            ExerciseOrder INT NOT NULL,
+                            CreatedBy NVARCHAR(200) NOT NULL,
+                            CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                            UpdatedBy NVARCHAR(200) NULL,
+                            UpdatedAt DATETIME2 NULL,
+                            FOREIGN KEY (FitnessPlanId) REFERENCES FitnessPlans(Id),
+                            FOREIGN KEY (ExerciseId) REFERENCES Exercises(Id)
+                        );
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AuditLogs')
+                    BEGIN
+                        CREATE TABLE AuditLogs (
+                            Id INT IDENTITY(1,1) PRIMARY KEY,
+                            UserId NVARCHAR(200) NULL,
+                            Type NVARCHAR(50) NOT NULL,
+                            TableName NVARCHAR(200) NOT NULL,
+                            DateTime DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                            OldValues NVARCHAR(MAX) NULL,
+                            NewValues NVARCHAR(MAX) NULL,
+                            AffectedColumns NVARCHAR(MAX) NULL,
+                            PrimaryKey NVARCHAR(200) NOT NULL
+                        );
+                    END";
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            Log.Information("Database '{DatabaseName}' initialized successfully", databaseName);
         }
     }
 }

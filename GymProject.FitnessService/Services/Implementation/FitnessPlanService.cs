@@ -29,7 +29,7 @@ namespace GymProject.Services.Implementation
             _auditLogService = auditLogService;
         }
 
-        public async Task<ResponseDto<bool>> CreateFitnessPlanAsync(CreateFitnessPlansDto fitnessPlanDto)
+        public async Task<ResponseDto<FitnessPlansDto>> CreateFitnessPlanAsync(CreateFitnessPlansDto fitnessPlanDto)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace GymProject.Services.Implementation
                 var userProfileId = await _userProfileClient.GetUserProfileIdByUserId(currentUserId);
 
                 if (userProfileId == null)
-                    return ResponseDto<bool>.Failure("User profile not found");
+                    return ResponseDto<FitnessPlansDto>.Failure("User profile not found");
 
                 var fitnessPlan = new FitnessPlans
                 {
@@ -58,14 +58,24 @@ namespace GymProject.Services.Implementation
                 }
 
                 if (!created)
-                    return ResponseDto<bool>.Failure("Failed to create fitness plan");
+                    return ResponseDto<FitnessPlansDto>.Failure("Failed to create fitness plan");
 
-                return ResponseDto<bool>.SuccessResponse(true, "Fitness plan created successfully.");
+                var createdDto = new FitnessPlansDto
+                {
+                    Id = fitnessPlan.Id,
+                    UserId = fitnessPlan.UserId,
+                    Name = fitnessPlan.Name,
+                    Description = fitnessPlan.Description,
+                    CreatedBy = fitnessPlan.CreatedBy,
+                    CreatedAt = fitnessPlan.CreatedAt
+                };
+
+                return ResponseDto<FitnessPlansDto>.SuccessResponse(createdDto, "Fitness plan created successfully.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating fitness plan");
-                return ResponseDto<bool>.Failure("An error occurred while creating the fitness plan.");
+                return ResponseDto<FitnessPlansDto>.Failure("An error occurred while creating the fitness plan.");
             }
         }
 
@@ -213,6 +223,17 @@ namespace GymProject.Services.Implementation
         {
             try
             {
+                var currentUserId = _currentUserService.GetCurrentUserId();
+                var userProfileId = await _userProfileClient.GetUserProfileIdByUserId(currentUserId);
+
+                if (userProfileId == null)
+                    return ResponseDto<FitnessPlanDetailsDto>.Failure("User profile not found");
+
+                var plan = await _fitnessPlansRepository.GetFitnessPlanById(id);
+
+                if (plan == null || plan.UserId != userProfileId.Value)
+                    return ResponseDto<FitnessPlanDetailsDto>.Failure("Not found");
+
                 var result = await _fitnessPlansRepository.GetFitnessPlanDetails(id);
 
                 if (result == null)

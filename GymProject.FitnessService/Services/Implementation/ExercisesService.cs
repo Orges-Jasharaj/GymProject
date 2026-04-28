@@ -21,7 +21,7 @@ namespace GymProject.Services.Implementation
             _auditLogService = auditLogService;
         }
 
-        public async Task<ResponseDto<bool>> CreateExercise(CreateExercisesDto exercise)
+        public async Task<ResponseDto<ExercisesDto>> CreateExercise(CreateExercisesDto exercise)
         {
             try
             {
@@ -43,22 +43,29 @@ namespace GymProject.Services.Implementation
                 if (created)
                 {
                     await _auditLogService.LogActivityAsync<Exercises>(currentUserId, "Create", "Exercises", newExercise.Id.ToString(), null, newExercise);
+                    var createdDto = new ExercisesDto
+                    {
+                        Id = newExercise.Id,
+                        Name = newExercise.Name,
+                        Description = newExercise.Description,
+                        MuscleGroup = newExercise.MuscleGroup,
+                        Equipment = newExercise.Equipment,
+                        CreatedBy = newExercise.CreatedBy,
+                        CreatedAt = newExercise.CreatedAt,
+                        UpdatedBy = newExercise.UpdatedBy,
+                        UpdatedAt = newExercise.UpdatedAt
+                    };
+                    return ResponseDto<ExercisesDto>.SuccessResponse(createdDto, "Exercise created successfully.");
                 }
 
-                if (!created)
-                {
-                    _logger.LogWarning("Failed to create exercise for user {UserId}", currentUserId);
-                    return ResponseDto<bool>.Failure("Failed to create the exercise.");
-                }
-
+                _logger.LogWarning("Failed to create exercise for user {UserId}", currentUserId);
+                return ResponseDto<ExercisesDto>.Failure("Failed to create the exercise.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating exercise");
-                return ResponseDto<bool>.Failure("An error occurred while creating the exercise.");
-
+                return ResponseDto<ExercisesDto>.Failure("An error occurred while creating the exercise.");
             }
-             return ResponseDto<bool>.SuccessResponse(true, "Exercise created successfully.");
         }
 
         public async Task<ResponseDto<bool>> DeleteExercise(Guid id)

@@ -1,11 +1,13 @@
 ﻿using GymProject.Dtos.Requests;
 using GymProject.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GymProject.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PlanExercisesController : ControllerBase
     {
         private readonly IPlanExercisesService _planExercisesService;

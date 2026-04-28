@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GymProject.IdentityService\GymProject.IdentityService.csproj" />
     <ProjectReference Include="..\GymProject.Shared\GymProject.Shared.csproj" />
   </ItemGroup>
 

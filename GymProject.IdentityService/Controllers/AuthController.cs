@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GymProject.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IUser _userService;

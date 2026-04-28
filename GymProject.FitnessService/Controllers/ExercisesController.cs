@@ -1,4 +1,5 @@
 ﻿using GymProject.Dtos.Requests;
+using GymProject.Models;
 using GymProject.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -19,24 +20,28 @@ namespace GymProject.Controllers
 
 
         [HttpPost("CreateExercise")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         public async Task<IActionResult> CreateExercises([FromBody] CreateExercisesDto createExercisesDto)
         {
             return Ok(await _exercisesService.CreateExercise(createExercisesDto));
         }
 
         [HttpDelete("DeleteExercise/{id}")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         public async Task<IActionResult> DeleteExercises(Guid id)
         {
             return Ok(await _exercisesService.DeleteExercise(id));
         }
 
         [HttpGet("GetAllExercises")]
+        [Authorize]
         public async Task<IActionResult> GetAllExercises()
         {
             return Ok(await _exercisesService.GetAllExercises());
         }
 
         [HttpGet("GetExerciseById/{id}")]
+        [Authorize]
         public async Task<IActionResult> GetExerciseById(Guid id)
         {
             return Ok(await _exercisesService.GetExerciseById(id));
@@ -44,6 +49,7 @@ namespace GymProject.Controllers
         }
 
         [HttpPut("UpdateExercise/{id}")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         public async Task<IActionResult> UpdateExercise(Guid id, [FromBody] CreateExercisesDto updateExercisesDto)
         {
             return Ok(await _exercisesService.UpdateExercise(id, updateExercisesDto));
