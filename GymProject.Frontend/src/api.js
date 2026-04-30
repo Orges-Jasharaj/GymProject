@@ -114,3 +114,35 @@ export async function fetchMeals() {
 export async function createMeal(meal) {
   return request('/Meal/CreateMeal', { method: 'POST', body: meal });
 }
+
+export async function createNutritionPlan(plan) {
+  return request('/Meal/CreateNutritionPlan', { method: 'POST', body: plan });
+}
+
+export async function fetchNutritionPlans() {
+  return request('/Meal/GetAllNutritionPlans');
+}
+
+export async function fetchNutritionPlanDetails(id) {
+  return request(`/Meal/GetNutritionPlanDetails/${id}`);
+}
+
+export async function addMealToNutritionPlan(payload) {
+  return request('/Meal/AddMealToNutritionPlan', { method: 'POST', body: payload });
+}
+
+export async function updateNutritionPlan(id, payload) {
+  return request(`/Meal/UpdateNutritionPlan/${id}`, { method: 'PUT', body: payload });
+}
+
+export async function deleteNutritionPlan(id) {
+  return request(`/Meal/DeleteNutritionPlan/${id}`, { method: 'DELETE' });
+}
+
+export async function updatePlanMeal(planMealId, payload) {
+  return request(`/Meal/UpdatePlanMeal/${planMealId}`, { method: 'PUT', body: payload });
+}
+
+export async function deletePlanMeal(planMealId) {
+  return request(`/Meal/DeletePlanMeal/${planMealId}`, { method: 'DELETE' });
+}

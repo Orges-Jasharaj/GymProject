@@ -9,6 +9,7 @@ import ExercisesPage from './pages/ExercisesPage';
 import FitnessPlansPage from './pages/FitnessPlansPage';
 import ExistingPlansPage from './pages/ExistingPlansPage';
 import MealsPage from './pages/MealsPage';
+import ExistingMealPlansPage from './pages/ExistingMealPlansPage';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 
@@ -36,6 +37,7 @@ function AppRoutes() {
           <Route path="/fitness" element={<ProtectedRoute><FitnessPlansPage /></ProtectedRoute>} />
           <Route path="/existing-plans" element={<ProtectedRoute><ExistingPlansPage /></ProtectedRoute>} />
           <Route path="/meals" element={<ProtectedRoute><MealsPage /></ProtectedRoute>} />
+          <Route path="/existing-meal-plans" element={<ProtectedRoute><ExistingMealPlansPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

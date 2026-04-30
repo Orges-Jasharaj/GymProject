@@ -7,6 +7,8 @@ namespace GymProject.NutritionService.Models
     {
         public int Id { get; set; }
         [Required]
+        public string Name { get; set; }
+        [Required]
         public string UserId { get; set; }
         [Required]
         public GoalType Goal { get; set; }

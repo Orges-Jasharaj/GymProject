@@ -20,9 +20,6 @@ export default function NavBar() {
           </NavLink>
         ) : (
           <>
-            <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
-              Home
-            </NavLink>
             <NavLink to="/exercises" className={({ isActive }) => (isActive ? 'active' : '')}>
               Exercises
             </NavLink>
@@ -34,6 +31,9 @@ export default function NavBar() {
             </NavLink>
             <NavLink to="/meals" className={({ isActive }) => (isActive ? 'active' : '')}>
               Meals
+            </NavLink>
+            <NavLink to="/existing-meal-plans" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Existing Meal Plans
             </NavLink>
             <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : '')}>
               Profile
