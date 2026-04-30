@@ -48,6 +48,13 @@ namespace GymProject.Controllers
 
         }
 
+        [HttpGet("GetExercisesByMuscleGroup")]
+        [Authorize]
+        public async Task<IActionResult> GetExercisesByMuscleGroup([FromQuery] string muscleGroup)
+        {
+            return Ok(await _exercisesService.GetExercisesByMuscleGroup(muscleGroup));
+        }
+
         [HttpPut("UpdateExercise/{id}")]
         [Authorize(Roles = "SuperAdmin,Admin")]
         public async Task<IActionResult> UpdateExercise(Guid id, [FromBody] CreateExercisesDto updateExercisesDto)

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { createExercise, fetchExercises } from '../api';
+import { createExercise, fetchExercises, fetchExercisesByMuscleGroup } from '../api';
 import { useAuth } from '../hooks/useAuth';
 
 export default function ExercisesPage() {
   const { auth } = useAuth();
   const [exercises, setExercises] = useState([]);
   const [form, setForm] = useState({ name: '', description: '', muscleGroup: '', equipment: '' });
+  const [searchGroup, setSearchGroup] = useState('');
   const [message, setMessage] = useState(null);
 
   const isAdmin = auth?.roles?.some((role) => role === 'SuperAdmin' || role === 'Admin');
@@ -31,12 +32,42 @@ export default function ExercisesPage() {
     }
   };
 
+  const handleSearchChange = (event) => {
+    setSearchGroup(event.target.value);
+  };
+
+  const handleSearch = async () => {
+    setMessage(null);
+    try {
+      if (!searchGroup.trim()) {
+        const allExercises = await fetchExercises();
+        setExercises(allExercises);
+        return;
+      }
+      const filtered = await fetchExercisesByMuscleGroup(searchGroup.trim());
+      setExercises(filtered);
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
+  const handleClearSearch = async () => {
+    setSearchGroup('');
+    setMessage(null);
+    try {
+      const allExercises = await fetchExercises();
+      setExercises(allExercises);
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
   return (
     <section className="page page-data">
       <h1>Exercises</h1>
-      <div className="data-card">
-        <h2>Add exercise</h2>
-        {isAdmin ? (
+      {isAdmin && (
+        <div className="data-card">
+          <h2>Add exercise</h2>
           <form className="entity-form" onSubmit={handleCreate}>
             <label>
               Name
@@ -56,9 +87,25 @@ export default function ExercisesPage() {
             </label>
             <button type="submit">Create exercise</button>
           </form>
-        ) : (
-          <p>You must be an admin to create exercises.</p>
-        )}
+        </div>
+      )}
+      <div className="data-card">
+        <h2>Search exercises by muscle group</h2>
+        <div className="entity-form">
+          <label>
+            Muscle group
+            <input
+              name="searchGroup"
+              value={searchGroup}
+              onChange={handleSearchChange}
+              placeholder="Chest, Back, Legs..."
+            />
+          </label>
+          <div className="button-row">
+            <button type="button" onClick={handleSearch}>Search</button>
+            <button type="button" onClick={handleClearSearch}>Clear</button>
+          </div>
+        </div>
       </div>
       {message && <p className="form-message">{message}</p>}
       <div className="data-table">

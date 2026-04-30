@@ -39,6 +39,8 @@ namespace GymProject.Services.Implementation
                     Sets = planExercise.Sets,
                     Reps = planExercise.Reps,
                     ExerciseOrder = planExercise.ExerciseOrder,
+                    DayOfWeek = planExercise.DayOfWeek,
+                    Focus = planExercise.Focus,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = currentUserId
                 };
@@ -120,6 +122,8 @@ namespace GymProject.Services.Implementation
                     Sets = x.Sets,
                     Reps = x.Reps,
                     ExerciseOrder = x.ExerciseOrder,
+                    DayOfWeek = x.DayOfWeek,
+                    Focus = x.Focus,
                     CreatedAt = x.CreatedAt,
                     CreatedBy = x.CreatedBy,
                     UpdatedAt = x.UpdatedAt,
@@ -154,6 +158,8 @@ namespace GymProject.Services.Implementation
                     Sets = entity.Sets,
                     Reps = entity.Reps,
                     ExerciseOrder = entity.ExerciseOrder,
+                    DayOfWeek = entity.DayOfWeek,
+                    Focus = entity.Focus,
                     CreatedAt = entity.CreatedAt,
                     CreatedBy = entity.CreatedBy,
                     UpdatedAt = entity.UpdatedAt,
@@ -196,6 +202,8 @@ namespace GymProject.Services.Implementation
                     Sets = existing.Sets,
                     Reps = existing.Reps,
                     ExerciseOrder = existing.ExerciseOrder,
+                    DayOfWeek = existing.DayOfWeek,
+                    Focus = existing.Focus,
                     CreatedAt = existing.CreatedAt,
                     CreatedBy = existing.CreatedBy,
                     UpdatedAt = existing.UpdatedAt,
@@ -207,6 +215,8 @@ namespace GymProject.Services.Implementation
                 existing.Sets = planExercise.Sets;
                 existing.Reps = planExercise.Reps;
                 existing.ExerciseOrder = planExercise.ExerciseOrder;
+                existing.DayOfWeek = planExercise.DayOfWeek;
+                existing.Focus = planExercise.Focus;
                 existing.UpdatedAt = DateTime.UtcNow;
                 existing.UpdatedBy = currentUserId;
 

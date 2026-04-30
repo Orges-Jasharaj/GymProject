@@ -132,6 +132,38 @@ namespace GymProject.Services.Implementation
             }
         }
 
+        public async Task<ResponseDto<List<ExercisesDto>>> GetExercisesByMuscleGroup(string muscleGroup)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(muscleGroup))
+                {
+                    return ResponseDto<List<ExercisesDto>>.Failure("Muscle group is required.");
+                }
+
+                var exercises = await _exercisesRepository.GetExercisesByMuscleGroup(muscleGroup);
+                var exercisesDto = exercises.Select(e => new ExercisesDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Description = e.Description,
+                    MuscleGroup = e.MuscleGroup,
+                    Equipment = e.Equipment,
+                    CreatedBy = e.CreatedBy,
+                    CreatedAt = e.CreatedAt,
+                    UpdatedBy = e.UpdatedBy,
+                    UpdatedAt = e.UpdatedAt
+                }).ToList();
+
+                return ResponseDto<List<ExercisesDto>>.SuccessResponse(exercisesDto, "Exercises retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving exercises for muscle group {MuscleGroup}", muscleGroup);
+                return ResponseDto<List<ExercisesDto>>.Failure("An error occurred while retrieving exercises.");
+            }
+        }
+
         public async Task<ResponseDto<ExercisesDto>> GetExerciseById(Guid id)
         {
             try

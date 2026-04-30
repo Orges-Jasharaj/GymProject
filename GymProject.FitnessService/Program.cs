@@ -207,6 +207,8 @@ namespace GymProject
                             Sets INT NOT NULL,
                             Reps INT NOT NULL,
                             ExerciseOrder INT NOT NULL,
+                            DayOfWeek NVARCHAR(50) NULL,
+                            Focus NVARCHAR(200) NULL,
                             CreatedBy NVARCHAR(200) NOT NULL,
                             CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
                             UpdatedBy NVARCHAR(200) NULL,
@@ -214,6 +216,17 @@ namespace GymProject
                             FOREIGN KEY (FitnessPlanId) REFERENCES FitnessPlans(Id),
                             FOREIGN KEY (ExerciseId) REFERENCES Exercises(Id)
                         );
+                    END
+                    ELSE
+                    BEGIN
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE [object_id] = OBJECT_ID('PlanExercises') AND name = 'DayOfWeek')
+                        BEGIN
+                            ALTER TABLE PlanExercises ADD DayOfWeek NVARCHAR(50) NULL;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE [object_id] = OBJECT_ID('PlanExercises') AND name = 'Focus')
+                        BEGIN
+                            ALTER TABLE PlanExercises ADD Focus NVARCHAR(200) NULL;
+                        END
                     END
 
                     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AuditLogs')

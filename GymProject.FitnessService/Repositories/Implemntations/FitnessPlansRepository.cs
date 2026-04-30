@@ -40,10 +40,24 @@ namespace GymProject.Repositories.Implemntations
         {
             try
             {
-                var query = "DELETE FROM FitnessPlans WHERE Id = @Id";
-
                 using var connection = _context.CreateConnection();
-                return await connection.ExecuteAsync(query, new { Id = id }) > 0;
+                connection.Open();
+                using var transaction = connection.BeginTransaction();
+
+                await connection.ExecuteAsync(
+                    "DELETE FROM PlanExercises WHERE FitnessPlanId = @Id",
+                    new { Id = id },
+                    transaction
+                );
+
+                var deletedPlans = await connection.ExecuteAsync(
+                    "DELETE FROM FitnessPlans WHERE Id = @Id",
+                    new { Id = id },
+                    transaction
+                );
+
+                transaction.Commit();
+                return deletedPlans > 0;
             }
             catch (Exception ex)
             {
@@ -111,13 +125,25 @@ namespace GymProject.Repositories.Implemntations
         {
             var query = @"
         SELECT 
-            fp.Id, fp.Name,
-            pe.ExerciseId, pe.Sets, pe.Reps, pe.ExerciseOrder,
+            fp.Id, fp.Name, fp.Description,
+            pe.ExerciseId, pe.DayOfWeek, pe.Focus, pe.Sets, pe.Reps, pe.ExerciseOrder AS [Order],
             e.Name
         FROM FitnessPlans fp
         JOIN PlanExercises pe ON fp.Id = pe.FitnessPlanId
         JOIN Exercises e ON pe.ExerciseId = e.Id
-        WHERE fp.Id = @Id";
+        WHERE fp.Id = @Id
+        ORDER BY
+            CASE pe.DayOfWeek
+                WHEN 'Monday' THEN 1
+                WHEN 'Tuesday' THEN 2
+                WHEN 'Wednesday' THEN 3
+                WHEN 'Thursday' THEN 4
+                WHEN 'Friday' THEN 5
+                WHEN 'Saturday' THEN 6
+                WHEN 'Sunday' THEN 7
+                ELSE 8
+            END,
+            pe.ExerciseOrder";
 
             using var connection = _context.CreateConnection();
 

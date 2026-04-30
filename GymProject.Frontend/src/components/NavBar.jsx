@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 export default function NavBar() {
   const { auth, logout } = useAuth();
   const isSuperAdmin = auth?.roles?.includes('SuperAdmin');
+  const isAdmin = auth?.roles?.includes('Admin');
 
   return (
     <nav className="top-nav">
@@ -12,6 +13,10 @@ export default function NavBar() {
         {isSuperAdmin ? (
           <NavLink to="/users" className={({ isActive }) => (isActive ? 'active' : '')}>
             Users
+          </NavLink>
+        ) : isAdmin ? (
+          <NavLink to="/admin" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Admin Dashboard
           </NavLink>
         ) : (
           <>
@@ -23,6 +28,9 @@ export default function NavBar() {
             </NavLink>
             <NavLink to="/fitness" className={({ isActive }) => (isActive ? 'active' : '')}>
               Fitness Plans
+            </NavLink>
+            <NavLink to="/existing-plans" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Existing Plans
             </NavLink>
             <NavLink to="/meals" className={({ isActive }) => (isActive ? 'active' : '')}>
               Meals

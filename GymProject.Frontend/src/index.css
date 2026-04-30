@@ -143,6 +143,15 @@ textarea {
   color: #4b5563;
 }
 
+.form-footer .secondary-button {
+  margin-left: 0.5rem;
+  background: #6b7280;
+}
+
+.danger-button {
+  background: #dc2626;
+}
+
 .form-message,
 .error {
   margin-top: 1rem;
@@ -166,6 +175,10 @@ textarea {
   border-bottom: 1px solid #e5e7eb;
 }
 
+.data-table td button + button {
+  margin-left: 0.5rem;
+}
+
 .data-table th {
   color: #374151;
   font-weight: 700;
@@ -174,3 +187,4 @@ textarea {
 .profile-card p {
   margin: 0.75rem 0;
 }
+

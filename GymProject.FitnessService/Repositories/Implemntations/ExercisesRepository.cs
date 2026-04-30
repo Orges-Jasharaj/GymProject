@@ -67,6 +67,22 @@ namespace GymProject.Repositories.Implemntations
             }
         }
 
+        public async Task<List<Exercises>> GetExercisesByMuscleGroup(string muscleGroup)
+        {
+            try
+            {
+                var query = "SELECT * FROM Exercises WHERE LOWER(MuscleGroup) = LOWER(@MuscleGroup)";
+                using var connection = _context.CreateConnection();
+                var exercises = await connection.QueryAsync<Exercises>(query, new { MuscleGroup = muscleGroup });
+                return exercises.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving exercises by muscle group {MuscleGroup}", muscleGroup);
+                return new List<Exercises>();
+            }
+        }
+
         public async Task<Exercises> GetExerciseById(Guid id)
         {
             try

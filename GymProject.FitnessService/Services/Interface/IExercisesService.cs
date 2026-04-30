@@ -8,6 +8,7 @@ namespace GymProject.Services.Interface
         Task<ResponseDto<ExercisesDto>> CreateExercise(CreateExercisesDto exercise);
         Task<ResponseDto<ExercisesDto>> GetExerciseById(Guid id);
         Task<ResponseDto<List<ExercisesDto>>> GetAllExercises();
+        Task<ResponseDto<List<ExercisesDto>>> GetExercisesByMuscleGroup(string muscleGroup);
         Task<ResponseDto<bool>> UpdateExercise(Guid id, CreateExercisesDto exercise);
         Task<ResponseDto<bool>> DeleteExercise(Guid id);
     }

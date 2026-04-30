@@ -67,6 +67,10 @@ export async function fetchExercises() {
   return request('/Exercises/GetAllExercises');
 }
 
+export async function fetchExercisesByMuscleGroup(muscleGroup) {
+  return request(`/Exercises/GetExercisesByMuscleGroup?muscleGroup=${encodeURIComponent(muscleGroup)}`);
+}
+
 export async function createExercise(exercise) {
   return request('/Exercises/CreateExercise', { method: 'POST', body: exercise });
 }
@@ -79,8 +83,28 @@ export async function createFitnessPlan(plan) {
   return request('/FitnessPlan/CreateFitnessPlan', { method: 'POST', body: plan });
 }
 
+export async function updateFitnessPlan(id, plan) {
+  return request(`/FitnessPlan/UpdateFitnessPlan/${id}`, { method: 'PUT', body: plan });
+}
+
+export async function deleteFitnessPlan(id) {
+  return request(`/FitnessPlan/DeleteFitnessPlan/${id}`, { method: 'DELETE' });
+}
+
+export async function fetchFitnessPlanDetails(id) {
+  return request(`/FitnessPlan/${id}/details`);
+}
+
 export async function createPlanExercise(planExercise) {
   return request('/PlanExercises', { method: 'POST', body: planExercise });
+}
+
+export async function fetchPlanExercises() {
+  return request('/PlanExercises');
+}
+
+export async function deletePlanExercise(id) {
+  return request(`/PlanExercises/${id}`, { method: 'DELETE' });
 }
 
 export async function fetchMeals() {

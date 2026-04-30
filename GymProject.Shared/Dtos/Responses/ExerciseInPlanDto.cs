@@ -13,5 +13,7 @@ namespace GymProject.Shared.Dtos.Responses
         public int Sets { get; set; }
         public int Reps { get; set; }
         public int Order { get; set; }
+        public string DayOfWeek { get; set; }
+        public string Focus { get; set; }
     }
 }

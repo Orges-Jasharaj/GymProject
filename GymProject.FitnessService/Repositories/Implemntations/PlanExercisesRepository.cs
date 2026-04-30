@@ -19,8 +19,8 @@ namespace GymProject.Repositories.Implemntations
         {
             try
             {
-                var query = @"INSERT INTO PlanExercises (Id, FitnessPlanId, ExerciseId, Sets, Reps, ExerciseOrder, CreatedBy, CreatedAt)
-                              VALUES (@Id, @FitnessPlanId, @ExerciseId, @Sets, @Reps, @ExerciseOrder, @CreatedBy, @CreatedAt)";
+                var query = @"INSERT INTO PlanExercises (Id, FitnessPlanId, ExerciseId, Sets, Reps, ExerciseOrder, DayOfWeek, Focus, CreatedBy, CreatedAt)
+                              VALUES (@Id, @FitnessPlanId, @ExerciseId, @Sets, @Reps, @ExerciseOrder, @DayOfWeek, @Focus, @CreatedBy, @CreatedAt)";
 
                 using var connection = _context.CreateConnection();
                 return await connection.ExecuteAsync(query, planExercise) > 0;
@@ -83,7 +83,7 @@ namespace GymProject.Repositories.Implemntations
             try
             {
                 var query = @"UPDATE PlanExercises
-                              SET FitnessPlanId = @FitnessPlanId, ExerciseId = @ExerciseId, Sets = @Sets, Reps = @Reps, ExerciseOrder = @ExerciseOrder, CreatedBy = @CreatedBy, CreatedAt = @CreatedAt
+                              SET FitnessPlanId = @FitnessPlanId, ExerciseId = @ExerciseId, Sets = @Sets, Reps = @Reps, ExerciseOrder = @ExerciseOrder, DayOfWeek = @DayOfWeek, Focus = @Focus, UpdatedBy = @UpdatedBy, UpdatedAt = @UpdatedAt
                               WHERE Id = @Id";
 
                 using var connection = _context.CreateConnection();

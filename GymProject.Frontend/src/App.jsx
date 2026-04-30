@@ -7,7 +7,9 @@ import UsersPage from './pages/UsersPage';
 import ProfilePage from './pages/ProfilePage';
 import ExercisesPage from './pages/ExercisesPage';
 import FitnessPlansPage from './pages/FitnessPlansPage';
+import ExistingPlansPage from './pages/ExistingPlansPage';
 import MealsPage from './pages/MealsPage';
+import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 
 function ProtectedRoute({ children }) {
@@ -28,9 +30,11 @@ function AppRoutes() {
           <Route path="/login" element={<AuthPage />} />
           <Route path="/register" element={<AuthPage />} />
           <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/exercises" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
           <Route path="/fitness" element={<ProtectedRoute><FitnessPlansPage /></ProtectedRoute>} />
+          <Route path="/existing-plans" element={<ProtectedRoute><ExistingPlansPage /></ProtectedRoute>} />
           <Route path="/meals" element={<ProtectedRoute><MealsPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
