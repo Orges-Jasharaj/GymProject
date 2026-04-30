@@ -47,6 +47,22 @@ export async function updateProfile(profile) {
   return request('/UserProfiles/UpdateUserProfile', { method: 'PUT', body: profile });
 }
 
+export async function createUserWithRole(user, role) {
+  return request(`/Auth/registerUserWithRole?role=${encodeURIComponent(role)}`, { method: 'POST', body: user });
+}
+
+export async function reactivateUser(userId) {
+  return request(`/User/ReactivateUser/${userId}`, { method: 'PUT' });
+}
+
+export async function deactivateUser(userId) {
+  return request(`/User/${userId}`, { method: 'DELETE' });
+}
+
+export async function updateUserRole(userId, role) {
+  return request(`/User/${userId}/role`, { method: 'PUT', body: { role } });
+}
+
 export async function fetchExercises() {
   return request('/Exercises/GetAllExercises');
 }

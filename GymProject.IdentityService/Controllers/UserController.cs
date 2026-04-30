@@ -19,7 +19,7 @@ namespace GymProject.Controllers
             _logger = logger;
         }
 
-        [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin}")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin}")]
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -32,7 +32,7 @@ namespace GymProject.Controllers
 
 
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Admin}")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin}")]
         public async Task<IActionResult> GetUserById(string id)
         {
             var result = await _userService.GetUserByIdAsync((id));
@@ -40,7 +40,7 @@ namespace GymProject.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Admin}")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto updateUserDto)
         {
             var result = await _userService.UpdateUserAsync(id, updateUserDto);
@@ -48,7 +48,7 @@ namespace GymProject.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Admin}")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var result = await _userService.DeleteUserAsync(id);
@@ -70,6 +70,13 @@ namespace GymProject.Controllers
             return Ok(await _userService.ReactivateUserAsync(id));
         }
 
+        [HttpPut("{id}/role")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin}")]
+        public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateUserRoleDto updateUserRoleDto)
+        {
+            var result = await _userService.UpdateUserRoleAsync(id, updateUserRoleDto);
+            return Ok(result);
+        }
 
     }
 }

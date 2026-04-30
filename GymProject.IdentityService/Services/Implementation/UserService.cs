@@ -141,12 +141,66 @@ namespace GymProject.Services.Implementation
             return ResponseDto<bool>.SuccessResponse(true, "User reactivated successfully.");
         }
 
+        public async Task<ResponseDto<bool>> UpdateUserRoleAsync(string userId, UpdateUserRoleDto roleDto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogInformation("Attempt to update role for non-existent user with ID: {UserId}", userId);
+                return ResponseDto<bool>.Failure("User not found.");
+            }
+
+            var allowedRoles = new[] { RoleTypes.SuperAdmin, RoleTypes.Admin, RoleTypes.User };
+            if (string.IsNullOrWhiteSpace(roleDto.Role) || !allowedRoles.Contains(roleDto.Role))
+            {
+                return ResponseDto<bool>.Failure("Invalid role specified.");
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
+                {
+                    var errors = removeResult.Errors.Select(e => new ApiError
+                    {
+                        ErrorCode = e.Code,
+                        ErrorMessage = e.Description
+                    }).ToList();
+                    return ResponseDto<bool>.Failure("Failed to remove existing roles.", errors);
+                }
+            }
+
+            var addResult = await _userManager.AddToRoleAsync(user, roleDto.Role);
+            if (!addResult.Succeeded)
+            {
+                var errors = addResult.Errors.Select(e => new ApiError
+                {
+                    ErrorCode = e.Code,
+                    ErrorMessage = e.Description
+                }).ToList();
+                return ResponseDto<bool>.Failure("Failed to assign role.", errors);
+            }
+
+            return ResponseDto<bool>.SuccessResponse(true, "User role updated successfully.");
+        }
+
         public async Task<ResponseDto<List<UserDto>>> GetAllUsersAsync(ClaimsPrincipal currentUser)
         {
             try
             {
                 var includeInactive = currentUser.IsInRole(RoleTypes.Admin) || currentUser.IsInRole(RoleTypes.SuperAdmin);
                 var users = await _userRepository.GetAllUsersAsync(includeInactive);
+
+                foreach (var user in users)
+                {
+                    var identityUser = await _userManager.FindByIdAsync(user.Id);
+                    if (identityUser != null)
+                    {
+                        user.Roles = (await _userManager.GetRolesAsync(identityUser)).ToList();
+                    }
+                }
+
                 return ResponseDto<List<UserDto>>.SuccessResponse(users, "Users retrieved successfully");
             }
             catch (Exception ex)
@@ -165,6 +219,7 @@ namespace GymProject.Services.Implementation
                 return ResponseDto<UserDto>.Failure("User not found.");
             }
 
+            var roles = await _userManager.GetRolesAsync(user);
             var userDto = new UserDto
             {
                 Id = user.Id,
@@ -172,6 +227,7 @@ namespace GymProject.Services.Implementation
                 LastName = user.LastName,
                 DateOfBirth = user.DateOfBirth,
                 Email = user.Email,
+                Roles = roles.ToList()
             };
 
             return ResponseDto<UserDto>.SuccessResponse(userDto, "User retrieved successfully.");
@@ -184,6 +240,12 @@ namespace GymProject.Services.Implementation
             {
                 _logger.LogInformation("Login attempt with non-existent email: {Email}", loginDto.Email);
                 return ResponseDto<LoginResponseDto>.Failure("User does not exist");
+            }
+
+            if (!userExists.isActive)
+            {
+                _logger.LogInformation("Login attempt for deactivated user: {Email}", loginDto.Email);
+                return ResponseDto<LoginResponseDto>.Failure("User account is deactivated.");
             }
 
             var result = await _signInManager.PasswordSignInAsync(userExists, loginDto.Password, false, false);
@@ -339,7 +401,7 @@ namespace GymProject.Services.Implementation
         {
             try
             {
-                var allowedRoles = new[] { RoleTypes.SuperAdmin, RoleTypes.Admin };
+                var allowedRoles = new[] { RoleTypes.SuperAdmin, RoleTypes.Admin, RoleTypes.User };
 
                 if (!allowedRoles.Contains(role))
                 {

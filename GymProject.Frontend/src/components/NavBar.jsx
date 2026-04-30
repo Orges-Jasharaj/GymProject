@@ -3,29 +3,35 @@ import { useAuth } from '../hooks/useAuth';
 
 export default function NavBar() {
   const { auth, logout } = useAuth();
+  const isSuperAdmin = auth?.roles?.includes('SuperAdmin');
 
   return (
     <nav className="top-nav">
       <div className="brand">GymProject</div>
       <div className="nav-links">
-        <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
-          Home
-        </NavLink>
-        <NavLink to="/exercises" className={({ isActive }) => (isActive ? 'active' : '')}>
-          Exercises
-        </NavLink>
-        <NavLink to="/fitness" className={({ isActive }) => (isActive ? 'active' : '')}>
-          Fitness Plans
-        </NavLink>
-        <NavLink to="/meals" className={({ isActive }) => (isActive ? 'active' : '')}>
-          Meals
-        </NavLink>
-        <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : '')}>
-          Profile
-        </NavLink>
-        <NavLink to="/users" className={({ isActive }) => (isActive ? 'active' : '')}>
-          Users
-        </NavLink>
+        {isSuperAdmin ? (
+          <NavLink to="/users" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Users
+          </NavLink>
+        ) : (
+          <>
+            <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
+              Home
+            </NavLink>
+            <NavLink to="/exercises" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Exercises
+            </NavLink>
+            <NavLink to="/fitness" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Fitness Plans
+            </NavLink>
+            <NavLink to="/meals" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Meals
+            </NavLink>
+            <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Profile
+            </NavLink>
+          </>
+        )}
       </div>
       <div className="auth-actions">
         {auth?.token ? (
