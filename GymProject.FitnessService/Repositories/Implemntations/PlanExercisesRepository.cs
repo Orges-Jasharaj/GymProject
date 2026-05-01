@@ -2,6 +2,7 @@
 using GymProject.Data;
 using GymProject.Models;
 using GymProject.Repositories.Interfaces;
+using GymProject.Services.Interface;
 
 namespace GymProject.Repositories.Implemntations
 {
@@ -13,6 +14,7 @@ namespace GymProject.Repositories.Implemntations
         {
             _context = context;
             _logger = logger;
+           
         }
 
         public async Task<bool> AddPlanExerciseAsync(PlanExercises planExercise)
