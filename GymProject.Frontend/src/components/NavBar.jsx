@@ -12,7 +12,7 @@ export default function NavBar() {
       <div className="nav-links">
         {isSuperAdmin ? (
           <NavLink to="/users" className={({ isActive }) => (isActive ? 'active' : '')}>
-            Users
+            User Management
           </NavLink>
         ) : isAdmin ? (
           <NavLink to="/admin" className={({ isActive }) => (isActive ? 'active' : '')}>

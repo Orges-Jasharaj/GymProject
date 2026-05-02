@@ -1,19 +1,23 @@
 import { useEffect, useState } from 'react';
-import { fetchProfile, createProfile, updateProfile } from '../api';
+import { fetchProfile, createProfile, updateProfile, fetchActiveUserSubscription } from '../api';
 import { useAuth } from '../hooks/useAuth';
 
 export default function ProfilePage() {
   const { auth } = useAuth();
   const [profile, setProfile] = useState(null);
+  const [activeSubscription, setActiveSubscription] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({ gender: '', heightCm: '', currentWeightKg: '', goalWeightKg: '', activityLevel: '', fitnessGoal: '' });
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
     if (!auth?.token) return;
-    fetchProfile()
-      .then((result) => {
+
+    const loadProfile = async () => {
+      try {
+        const result = await fetchProfile();
         setProfile(result);
+
         if (result) {
           setForm({
             gender: result.gender ?? '',
@@ -24,8 +28,21 @@ export default function ProfilePage() {
             fitnessGoal: result.fitnessGoal ?? ''
           });
         }
-      })
-      .catch((err) => setMessage(err.message));
+
+        if (result?.userId) {
+          try {
+            const active = await fetchActiveUserSubscription(result.userId);
+            setActiveSubscription(active);
+          } catch {
+            setActiveSubscription(null);
+          }
+        }
+      } catch (err) {
+        setMessage(err.message);
+      }
+    };
+
+    loadProfile();
   }, [auth]);
 
   const handleChange = (event) => {
@@ -79,6 +96,12 @@ export default function ProfilePage() {
     setMessage(null);
   };
 
+  const subscriptionName = activeSubscription?.subscriptionPlanName ?? profile?.activeSubscriptionPlanName;
+  const subscriptionActive = activeSubscription?.isActive ?? profile?.activeSubscriptionIsActive;
+  const subscriptionStartDate = activeSubscription?.startDate ?? profile?.activeSubscriptionStartDate;
+  const subscriptionEndDate = activeSubscription?.endDate ?? profile?.activeSubscriptionEndDate;
+  const hasSubscription = Boolean(subscriptionName);
+
   if (!auth?.token) {
     return (
       <section className="page page-data">
@@ -95,14 +118,69 @@ export default function ProfilePage() {
       {profile && !isEditing ? (
         <>
           <div className="profile-card">
-            <p><strong>Gender:</strong> {profile.gender ?? 'Not set'}</p>
-            <p><strong>Height:</strong> {profile.heightCm ?? 'N/A'} cm</p>
-            <p><strong>Current weight:</strong> {profile.currentWeightKg ?? 'N/A'} kg</p>
-            <p><strong>Goal weight:</strong> {profile.goalWeightKg ?? 'N/A'} kg</p>
-            <p><strong>Activity level:</strong> {profile.activityLevel ?? 'Not set'}</p>
-            <p><strong>Fitness goal:</strong> {profile.fitnessGoal ?? 'Not set'}</p>
+            <div className="profile-card-header">
+              <div>
+                <p className="profile-card-eyebrow">Profile overview</p>
+                <h2>Your fitness profile</h2>
+              </div>
+              <span className={`profile-badge ${hasSubscription ? 'active' : 'inactive'}`}>
+                {hasSubscription ? 'Active subscription' : 'No active subscription'}
+              </span>
+            </div>
+
+            <div className="profile-grid">
+              <div className="profile-stat">
+                <span>Gender</span>
+                <strong>{profile.gender ?? 'Not set'}</strong>
+              </div>
+              <div className="profile-stat">
+                <span>Height</span>
+                <strong>{profile.heightCm ?? 'N/A'} cm</strong>
+              </div>
+              <div className="profile-stat">
+                <span>Current weight</span>
+                <strong>{profile.currentWeightKg ?? 'N/A'} kg</strong>
+              </div>
+              <div className="profile-stat">
+                <span>Goal weight</span>
+                <strong>{profile.goalWeightKg ?? 'N/A'} kg</strong>
+              </div>
+              <div className="profile-stat">
+                <span>Activity level</span>
+                <strong>{profile.activityLevel ?? 'Not set'}</strong>
+              </div>
+              <div className="profile-stat">
+                <span>Fitness goal</span>
+                <strong>{profile.fitnessGoal ?? 'Not set'}</strong>
+              </div>
+            </div>
+
+            <div className="profile-details">
+              <p className="profile-details-title">Subscription details</p>
+              <div className="profile-detail-item">
+                <span>Subscription plan</span>
+                <strong>{subscriptionName ?? 'None'}</strong>
+              </div>
+              {hasSubscription && (
+                <>
+                  <div className="profile-detail-item">
+                    <span>Status</span>
+                    <strong>{subscriptionActive ? 'Active' : 'Expired'}</strong>
+                  </div>
+                  <div className="profile-detail-item">
+                    <span>Start date</span>
+                    <strong>{subscriptionStartDate ? new Date(subscriptionStartDate).toLocaleDateString() : 'N/A'}</strong>
+                  </div>
+                  <div className="profile-detail-item">
+                    <span>End date</span>
+                    <strong>{subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'N/A'}</strong>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-          <button type="button" onClick={startEditing}>Edit profile</button>
+
+          <button type="button" className="primary-button" onClick={startEditing}>Edit profile</button>
         </>
       ) : (
         <form className="entity-form" onSubmit={handleSubmit}>

@@ -63,6 +63,30 @@ export async function updateUserRole(userId, role) {
   return request(`/User/${userId}/role`, { method: 'PUT', body: { role } });
 }
 
+export async function fetchGyms() {
+  return request('/Gym/GetAllGyms');
+}
+
+export async function createGym(gym) {
+  return request('/Gym/CreateGym', { method: 'POST', body: gym });
+}
+
+export async function fetchSubscriptionPlans() {
+  return request('/SubscriptionPlan/GetAllSubscriptionPlans');
+}
+
+export async function createSubscriptionPlan(plan) {
+  return request('/SubscriptionPlan/CreateSubscriptionPlan', { method: 'POST', body: plan });
+}
+
+export async function subscribeUserToPlan(payload) {
+  return request('/UserSubscription/SubscribeUser', { method: 'POST', body: payload });
+}
+
+export async function fetchActiveUserSubscription(userId) {
+  return request(`/UserSubscription/GetActiveSubscription/${userId}`);
+}
+
 export async function fetchExercises() {
   return request('/Exercises/GetAllExercises');
 }
