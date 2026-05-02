@@ -108,6 +108,8 @@ namespace GymProject.SubscriptionService
             builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 
             builder.Services.AddScoped<IGymService, GymService>();
+            builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+            builder.Services.AddScoped<IUserSubscriptionService, UserSubscriptionService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

@@ -36,7 +36,18 @@ namespace GymProject
           (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
 
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddHttpClient<IUserSubscriptionClient, UserSubscriptionClient>(client =>
+            {
+                var subscriptionUrl = builder.Configuration["SubscriptionServiceUrl"];
+                if (string.IsNullOrWhiteSpace(subscriptionUrl))
+                {
+                    subscriptionUrl = builder.Environment.IsDevelopment()
+                        ? "http://localhost:5106/"
+                        : "https://localhost:7216/";
+                }
 
+                client.BaseAddress = new Uri(subscriptionUrl);
+            });
 
             builder.Host.UseSerilog((context, configuration) =>
             {

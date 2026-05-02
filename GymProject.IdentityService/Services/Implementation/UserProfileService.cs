@@ -3,23 +3,27 @@ using GymProject.Dtos.Responses;
 using GymProject.Models;
 using GymProject.Repositories.Interfaces;
 using GymProject.Services.Interface;
+using GymProject.Shared.Dtos.Responses;
 
 namespace GymProject.Services.Implementation
 {
     public class UserProfileService : IUserProfileService
     {
         private readonly IUserProfileRepository _userProfileRepository;
+        private readonly IUserSubscriptionClient _userSubscriptionClient;
         private readonly CurrentUserService _currentUserService;
         private readonly ILogger<UserProfileService> _logger;
         private readonly IAuditLogService _auditLogService;
 
         public UserProfileService(
             IUserProfileRepository userProfileRepository,
+            IUserSubscriptionClient userSubscriptionClient,
             CurrentUserService currentUserService,
             ILogger<UserProfileService> logger,
             IAuditLogService auditLogService)
         {
             _userProfileRepository = userProfileRepository;
+            _userSubscriptionClient = userSubscriptionClient;
             _currentUserService = currentUserService;
             _logger = logger;
             _auditLogService = auditLogService;
@@ -57,8 +61,25 @@ namespace GymProject.Services.Implementation
                     FitnessGoal = profile.FitnessGoal,
                     DateOfBirth = profile.DateOfBirth,
                     CreatedAt = profile.CreatedAt,
-                    UpdatedAt = profile.UpdatedAt
+                    UpdatedAt = profile.UpdatedAt,
+                    SubscriptionCount = 0,
+                    ActiveSubscriptionId = null,
+                    ActiveSubscriptionPlanName = null,
+                    ActiveSubscriptionStartDate = null,
+                    ActiveSubscriptionEndDate = null,
+                    ActiveSubscriptionIsActive = false
                 };
+
+                var activeSubscriptionResult = await _userSubscriptionClient.GetActiveUserSubscriptionByUserIdAsync(currentUserId);
+                if (activeSubscriptionResult.Success && activeSubscriptionResult.Data != null)
+                {
+                    profileDto.SubscriptionCount = 1;
+                    profileDto.ActiveSubscriptionId = activeSubscriptionResult.Data.Id;
+                    profileDto.ActiveSubscriptionPlanName = activeSubscriptionResult.Data.SubscriptionPlanName;
+                    profileDto.ActiveSubscriptionStartDate = activeSubscriptionResult.Data.StartDate;
+                    profileDto.ActiveSubscriptionEndDate = activeSubscriptionResult.Data.EndDate;
+                    profileDto.ActiveSubscriptionIsActive = activeSubscriptionResult.Data.IsActive;
+                }
 
                 _logger.LogInformation("User profile retrieved successfully for UserId: {UserId}", currentUserId);
 

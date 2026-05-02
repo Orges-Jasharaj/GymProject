@@ -15,5 +15,11 @@
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public int SubscriptionCount { get; set; }
+        public Guid? ActiveSubscriptionId { get; set; }
+        public string? ActiveSubscriptionPlanName { get; set; }
+        public DateTime? ActiveSubscriptionStartDate { get; set; }
+        public DateTime? ActiveSubscriptionEndDate { get; set; }
+        public bool ActiveSubscriptionIsActive { get; set; }
     }
 }

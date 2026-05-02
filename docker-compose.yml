@@ -10,6 +10,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sql-server;Database=GymProject_IdentityDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      - SubscriptionServiceUrl=http://subscription-service:8080/
     depends_on:
       sql-server:
         condition: service_healthy
@@ -49,6 +50,23 @@ services:
       identity-service:
         condition: service_started
 
+  subscription-service:
+    image: gymproject-subscription-service
+    build:
+      context: .
+      dockerfile: GymProject.SubscriptionService/Dockerfile
+    ports:
+      - "5040:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=GymProject_SubscriptionDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      - IdentityServiceUrl=http://identity-service:8080/
+    depends_on:
+      sql-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_started
+
   api-gateway:
     image: gymproject-api-gateway
     build:
@@ -61,10 +79,12 @@ services:
       - ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address=http://identity-service:8080
       - ReverseProxy__Clusters__fitness-cluster__Destinations__destination1__Address=http://fitness-service:8080
       - ReverseProxy__Clusters__nutrition-cluster__Destinations__destination1__Address=http://nutrition-service:8080
+      - ReverseProxy__Clusters__subscription-cluster__Destinations__destination1__Address=http://subscription-service:8080
     depends_on:
       - identity-service
       - fitness-service
       - nutrition-service
+      - subscription-service
 
   frontend:
     image: gymproject-frontend
